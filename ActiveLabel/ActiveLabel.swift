@@ -25,7 +25,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
     
     open var urlMaximumLength: Int?
     
-    open var configureLinkAttribute: ConfigureLinkAttribute?
+    private var configureLinkAttribute: ConfigureLinkAttribute?
     
     @IBInspectable open var mentionColor: UIColor = .blue {
         didSet { updateTextStorage(parseText: false) }
@@ -439,14 +439,16 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
             attributes[NSAttributedString.Key.foregroundColor] = unselectedColor
         }
         
-        if let highlightFont = hightlightFont {
-            attributes[NSAttributedString.Key.font] = highlightFont
+        let font: UIFont?
+        switch type {
+        case .mention: font = mentionFont
+        case .hashtag: font = hashtagFont
+        case .url: font = URLFont
+        case .custom: font = customFont[selectedElement.type]
         }
         
-        if let configureLinkAttribute = configureLinkAttribute {
-            attributes = configureLinkAttribute(type, attributes, isSelected)
-        }
-        
+        attributes[NSAttributedString.Key.font] = font ?? self.font!
+
         textStorage.addAttributes(attributes, range: selectedElement.range)
         
         setNeedsDisplay()
